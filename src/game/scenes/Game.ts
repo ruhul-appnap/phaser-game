@@ -8,6 +8,8 @@ export class Game extends Scene {
     private stars: Phaser.Physics.Arcade.Group;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
+    private bombs: Phaser.Physics.Arcade.Image;
+    private gameOver = false;
 
     constructor() {
         super("Game");
@@ -22,6 +24,35 @@ export class Game extends Scene {
 
         this.score += 10;
         this.scoreText.setText("Score: " + this.score);
+
+        // if (starImage.countActive(true) === 0) {
+        //     starImage.children.iterate(function (child) {
+        //         child.enableBody(true, child.x, 0, true, true);
+        //     });
+
+        //     var x =
+        //         player.x < 400
+        //             ? Phaser.Math.Between(400, 800)
+        //             : Phaser.Math.Between(0, 400);
+
+        //     var bomb = bombs.create(x, 16, "bomb");
+        //     bomb.setBounce(1);
+        //     bomb.setCollideWorldBounds(true);
+        //     bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        // }
+    }
+
+    private hitBomb(
+        player: Phaser.GameObjects.GameObject,
+        bomb: Phaser.GameObjects.GameObject
+    ): void {
+        this.physics.pause();
+
+        this.player.setTint(0xff0000);
+
+        this.player.anims.play("turn");
+
+        this.gameOver = true;
     }
 
     preload() {
@@ -107,6 +138,18 @@ export class Game extends Scene {
             fontSize: "32px",
             fill: "#000",
         });
+
+        this.bombs = this.physics.add.group();
+
+        this.physics.add.collider(this.bombs, this.platforms);
+
+        this.physics.add.collider(
+            this.player,
+            this.bombs,
+            this.hitBomb,
+            null,
+            this
+        );
 
         EventBus.emit("current-scene-ready", this);
     }
